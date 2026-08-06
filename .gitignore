@@ -1,0 +1,70 @@
+# eclipse
+eclipse
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+.idea/
+out
+*.ipr
+*.iws
+*.iml
+
+# vscode
+.vscode/
+
+# visual studio
+.vs/
+
+# npm
+node_modules/
+package-lock.json
+pnpm-lock.*
+
+# gradle
+build/
+.gradle/
+.kotlin/
+
+# other
+bin/
+run/
+*.log
+*.log.gz
+
+# Forge MDK
+forge*changelog.txt
+
+# JFR
+.profileconfig.json
+*.jfr
+
+# AI tools
+/.ai/
+.claude/
+.clinerules/
+.codebuddy/
+.codex/
+.cursorrules/
+.kilo/
+.kilocode/
+.lingma/
+.marscode/
+.mimocode/
+.opencode/
+.qoder/
+.trae/
+
+AGENTS-*.md
+
+# stonecutter
+/versions/*-*/*
+!/versions/*-*/gradle.properties
+
+# dotenv
+.env
+.env.*
+!.env.example
