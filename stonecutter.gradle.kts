@@ -3,7 +3,7 @@ plugins {
 
   id("dev.isxander.modstitch.base") version "0.8.5" apply false
   id("me.modmuss50.mod-publish-plugin") version "2.2.0" apply false
-  id("net.fabricmc.fabric-loom") version "1.15-SNAPSHOT" apply false
+  id("net.fabricmc.fabric-loom") version "1.16.3" apply false
 }
 
 stonecutter active "26.2-fabric"

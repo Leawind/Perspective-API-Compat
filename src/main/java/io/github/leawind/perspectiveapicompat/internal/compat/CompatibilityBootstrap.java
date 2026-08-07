@@ -1,5 +1,7 @@
 package io.github.leawind.perspectiveapicompat.internal.compat;
 
+import io.github.leawind.perspectiveapicompat.internal.compat.shouldersurfing.ShoulderSurfingCompatibility;
+import io.github.leawind.perspectiveapicompat.platform.api.Services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +19,11 @@ public final class CompatibilityBootstrap {
   public static synchronized void initialize() {
     if (initialized) return;
     initialized = true;
+
+    if (Services.PLATFORM_HELPER.isModLoaded(ShoulderSurfingCompatibility.MOD_ID)) {
+      ShoulderSurfingCompatibility.initialize();
+    }
+
     LOGGER.debug("Perspective API compatibility bootstrap is ready");
   }
 }

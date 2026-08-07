@@ -19,5 +19,8 @@
     "fabricloader": "*",
     "perspective_api": ">=${perspectiveApiVersion}",
     "minecraft": "${mc}"
+  },
+  "suggests": {
+    "shouldersurfing": "*"
   }
 }

@@ -4,7 +4,6 @@ import org.gradle.api.tasks.Sync
 plugins {
     id("dev.kikugie.stonecutter")
     id("dev.isxander.modstitch.base")
-    `maven-publish`
     id("me.modmuss50.mod-publish-plugin")
 }
 
@@ -120,14 +119,12 @@ modstitch {
         }
     }
 
-    // Legacy Forge's reobfuscation task requires a generated Mixin refmap. The only Forge Mixin is
-    // a no-op bootstrap target; it has no injections and exists solely to make that tool contract
-    // explicit for this otherwise Mixin-free scaffold.
-    if (isForge) {
-        mixin {
-            addMixinsToModManifest = true
-            configs.register("perspective_api_compat.forge")
-        }
+    // The shared config contains only pseudo Mixins for optional target mods. Legacy Forge also
+    // retains its no-op config so ModDevGradle generates the refmap it requires.
+    mixin {
+        addMixinsToModManifest = true
+        configs.register("perspective_api_compat")
+        if (isForge) configs.register("perspective_api_compat.forge")
     }
 
     // Enable unit testing for supported platforms
@@ -170,11 +167,39 @@ dependencies {
     compileOnly("com.google.auto.service:auto-service-annotations:1.1.1")
     annotationProcessor("com.google.auto.service:auto-service:1.1.1")
 
+    // Perspective API owns the runtime MixinExtras artifact. Compile against its common API, and
+    // let Legacy Forge's annotation processor emit production mappings for the optional mixin.
+    val mixinExtrasCommon = "io.github.llamalad7:mixinextras-common:0.5.4"
+    compileOnly(mixinExtrasCommon)
+    if (isForge) {
+        annotationProcessor(mixinExtrasCommon)
+    }
+
     if (isFabric) {
         modstitchModImplementation(
             "net.fabricmc.fabric-api:fabric-api:${requiredProp("deps.fabricApi")}",
         )
     }
+
+    // Shoulder Surfing Reloaded is an optional target mod; its API is only accessed reflectively.
+    modstitchModImplementation("maven.modrinth:kepjj2sy:${requiredProp("mod.shouldersurfing_version")}")
+
+    // SSR hard-depends on Forge Config API Port on Fabric (and its legacy NeoForge builds).
+    findProperty("mod.forgeconfigapiport_version")
+        ?.toString()
+        ?.takeIf { it.isNotBlank() }
+        ?.let { modstitchModImplementation("maven.modrinth:forge-config-api-port:$it") }
+
+    // Loom's remap removes the nested jars of dependency mods on obfuscated versions, so the
+    // nightconfig bundled by Forge Config API Port is missing from the dev runtime classpath
+    // there; add the same version explicitly for those variants.
+    findProperty("deps.nightconfigVersion")
+        ?.toString()
+        ?.takeIf { it.isNotBlank() }
+        ?.let { nightconfig ->
+            runtimeOnly("com.electronwill.night-config:core:$nightconfig")
+            runtimeOnly("com.electronwill.night-config:toml:$nightconfig")
+        }
 
     // Test
     testCompileOnly("org.jspecify:jspecify:1.0.0")
@@ -227,14 +252,13 @@ tasks.withType<ProcessResources>().configureEach {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-// Exclude loader-specific metadata and the default refmap (AP generates it, so resources version
-// would duplicate).
+// Exclude loader-specific metadata. Forge's AP generates its refmap, while Fabric and NeoForge
+// retain the empty resource refmap used by their runtime remappers.
 tasks.named<ProcessResources>("processResources") {
     if (isForge) {
         exclude("perspective_api_compat.refmap.json")
     } else {
         exclude("perspective_api_compat.forge.mixins.json")
-        exclude("perspective_api_compat.refmap.json")
     }
 }
 // endregion
@@ -278,34 +302,6 @@ afterEvaluate {
             clientRequired = true
             serverRequired = false
         }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = modIdValue
-            version = "$modVersionString+$loader-$mcVersion"
-            from(components["java"])
-            pom {
-                name.set(modNameValue)
-                description.set(modDescriptionValue)
-                url.set(modHomeUrl)
-                scm {
-                    url.set(modSourceUrl)
-                    connection.set("scm:git:$modSourceUrl.git")
-                    developerConnection.set("scm:git:$modSourceUrl.git")
-                }
-                issueManagement {
-                    system.set("GitHub Issues")
-                    url.set(modIssuesUrl)
-                }
-            }
-        }
-    }
-
-    repositories {
-        mavenLocal()
     }
 }
 // endregion
