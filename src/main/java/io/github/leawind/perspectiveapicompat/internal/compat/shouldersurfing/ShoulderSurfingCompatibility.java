@@ -45,4 +45,11 @@ public final class ShoulderSurfingCompatibility {
   public static boolean isAvailable() {
     return initialized && API.isAvailable();
   }
+
+  /// Whether SSR's crosshair policy must yield to the active non-SSR Perspective.
+  public static boolean shouldSuppressCrosshair() {
+    return PerspectiveAPI.isEnabled()
+        && isAvailable()
+        && !PerspectiveAPI.isCurrent(PERSPECTIVE_ID);
+  }
 }

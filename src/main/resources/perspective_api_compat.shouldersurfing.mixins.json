@@ -1,10 +1,14 @@
 {
-  "required": true,
+  "required": false,
   "package": "io.github.leawind.perspectiveapicompat.internal.compat.shouldersurfing.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "refmap": "perspective_api_compat.refmap.json",
-  "client": ["ShoulderSurfingInputHandlerMixin"],
+  "client": [
+    "ShoulderSurfingCrosshairRendererV5Mixin",
+    "ShoulderSurfingCrosshairVisibilityV4Mixin",
+    "ShoulderSurfingInputHandlerMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

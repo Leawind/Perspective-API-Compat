@@ -119,12 +119,10 @@ modstitch {
         }
     }
 
-    // The shared config contains only pseudo Mixins for optional target mods. Legacy Forge also
-    // retains its no-op config so ModDevGradle generates the refmap it requires.
+    // Optional target mods are mixed in via their own configs.
     mixin {
         addMixinsToModManifest = true
-        configs.register("perspective_api_compat")
-        if (isForge) configs.register("perspective_api_compat.forge")
+        configs.register("perspective_api_compat.shouldersurfing")
     }
 
     // Enable unit testing for supported platforms
@@ -257,8 +255,6 @@ tasks.withType<ProcessResources>().configureEach {
 tasks.named<ProcessResources>("processResources") {
     if (isForge) {
         exclude("perspective_api_compat.refmap.json")
-    } else {
-        exclude("perspective_api_compat.forge.mixins.json")
     }
 }
 // endregion
