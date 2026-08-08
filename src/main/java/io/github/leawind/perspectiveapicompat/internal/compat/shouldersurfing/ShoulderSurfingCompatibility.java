@@ -15,6 +15,8 @@ public final class ShoulderSurfingCompatibility {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ShoulderSurfingCompatibility.class);
   private static final ShoulderSurfingApi API = new ShoulderSurfingApi();
+  private static final ThreadLocal<Boolean> CROSSHAIR_VETO_BYPASS =
+      ThreadLocal.withInitial(() -> false);
   private static volatile boolean initialized;
 
   private ShoulderSurfingCompatibility() {}
@@ -51,5 +53,26 @@ public final class ShoulderSurfingCompatibility {
     return PerspectiveAPI.isEnabled()
         && isAvailable()
         && !PerspectiveAPI.isCurrent(PERSPECTIVE_ID);
+  }
+
+  /// Arms one permissive visibility read for Fabric's early SSR crosshair veto.
+  public static void beginCrosshairVetoBypass() {
+    if (shouldSuppressCrosshair()) {
+      CROSSHAIR_VETO_BYPASS.set(true);
+    } else {
+      CROSSHAIR_VETO_BYPASS.remove();
+    }
+  }
+
+  /// Consumes the one visibility read reserved for Fabric's early SSR crosshair veto.
+  public static boolean consumeCrosshairVetoBypass() {
+    if (!CROSSHAIR_VETO_BYPASS.get()) return false;
+    CROSSHAIR_VETO_BYPASS.remove();
+    return true;
+  }
+
+  /// Clears an unused Fabric crosshair-veto allowance after vanilla finishes the pass.
+  public static void endCrosshairVetoBypass() {
+    CROSSHAIR_VETO_BYPASS.remove();
   }
 }

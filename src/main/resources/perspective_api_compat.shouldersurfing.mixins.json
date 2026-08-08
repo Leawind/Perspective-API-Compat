@@ -7,6 +7,8 @@
   "client": [
     "ShoulderSurfingCrosshairRendererV5Mixin",
     "ShoulderSurfingCrosshairVisibilityV4Mixin",
+    "ShoulderSurfingForgeCrosshairEventHandlerMixin",
+    "ShoulderSurfingNeoForgeCrosshairEventHandlerMixin",
     "ShoulderSurfingInputHandlerMixin"
   ],
   "injectors": {

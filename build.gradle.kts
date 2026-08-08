@@ -123,6 +123,9 @@ modstitch {
     mixin {
         addMixinsToModManifest = true
         configs.register("perspective_api_compat.shouldersurfing")
+        if (isFabric) {
+            configs.register("perspective_api_compat.shouldersurfing.fabric")
+        }
     }
 
     // Enable unit testing for supported platforms
@@ -255,6 +258,9 @@ tasks.withType<ProcessResources>().configureEach {
 tasks.named<ProcessResources>("processResources") {
     if (isForge) {
         exclude("perspective_api_compat.refmap.json")
+    }
+    if (!isFabric) {
+        exclude("perspective_api_compat.shouldersurfing.fabric.mixins.json")
     }
 }
 // endregion

@@ -18,7 +18,9 @@ abstract class ShoulderSurfingCrosshairRendererV5Mixin {
   private void perspectiveApiCompat$restoreVanillaVisibility(
       CallbackInfoReturnable<Boolean> cir) {
     if (ShoulderSurfingCompatibility.shouldSuppressCrosshair()) {
-      cir.setReturnValue(Minecraft.getInstance().options.getCameraType().isFirstPerson());
+      cir.setReturnValue(
+          ShoulderSurfingCompatibility.consumeCrosshairVetoBypass()
+              || Minecraft.getInstance().options.getCameraType().isFirstPerson());
     }
   }
 

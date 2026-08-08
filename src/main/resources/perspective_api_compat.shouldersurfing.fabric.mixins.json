@@ -1,0 +1,11 @@
+{
+  "required": false,
+  "package": "io.github.leawind.perspectiveapicompat.platform.fabric.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "refmap": "perspective_api_compat.refmap.json",
+  "client": ["ShoulderSurfingCrosshairVetoMixin"],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
