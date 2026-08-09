@@ -1,6 +1,3 @@
-import org.gradle.api.artifacts.ExternalModuleDependency
-import org.gradle.api.tasks.Sync
-
 plugins {
     id("dev.kikugie.stonecutter")
     id("dev.isxander.modstitch.base")
@@ -21,6 +18,8 @@ val modHomeUrl = requiredProp("mod.home_url")
 val modSourceUrl = requiredProp("mod.source_url")
 val modIssuesUrl = requiredProp("mod.issues_url")
 val modEmail = requiredProp("mod.email")
+val perspectiveApiVersion = requiredProp("mod.perspective_api_version")
+val minecraftDependency = requiredProp("meta.mcDep")
 
 val isFabric = modstitch.isLoom
 val isNeoforge = modstitch.isModDevGradleRegular
@@ -55,7 +54,7 @@ val perspectiveApiCoordinate =
     if (useLocalPerspectiveApi) {
         "io.github.leawind.perspectiveapi:perspective_api:0.0-SNAPSHOT+$loader-$mcVersion"
     } else {
-        "maven.modrinth:LIqveQm1:${requiredProp("mod.perspective_api_version")}+$loader-$mcVersion"
+        "maven.modrinth:LIqveQm1:$perspectiveApiVersion+$loader-$mcVersion"
     }
 // endregion
 
@@ -106,16 +105,10 @@ modstitch {
         replacementProperties.put("source_url", modSourceUrl)
         replacementProperties.put("issues_url", modIssuesUrl)
         replacementProperties.put("email", modEmail)
-        replacementProperties.put("github", "Leawind/Perspective-API-Compat")
-        replacementProperties.put("mc", requiredProp("meta.mcDep"))
-        replacementProperties.put(
-            "perspectiveApiVersion",
-            requiredProp("mod.perspective_api_version"),
-        )
+        replacementProperties.put("mc", minecraftDependency)
+        replacementProperties.put("perspectiveApiVersion", perspectiveApiVersion)
         if (isNeoforge) {
             replacementProperties.put("loaderVersion", requiredProp("meta.loaderDep"))
-        } else if (isForge) {
-            replacementProperties.put("loaderVersion", "*")
         }
     }
 
@@ -186,21 +179,17 @@ dependencies {
     modstitchModImplementation("maven.modrinth:kepjj2sy:${requiredProp("mod.shouldersurfing_version")}")
 
     // SSR hard-depends on Forge Config API Port on Fabric (and its legacy NeoForge builds).
-    findProperty("mod.forgeconfigapiport_version")
-        ?.toString()
-        ?.takeIf { it.isNotBlank() }
-        ?.let { modstitchModImplementation("maven.modrinth:forge-config-api-port:$it") }
+    optionalProp("mod.forgeconfigapiport_version") {
+        modstitchModImplementation("maven.modrinth:forge-config-api-port:$it")
+    }
 
     // Loom's remap removes the nested jars of dependency mods on obfuscated versions, so the
     // nightconfig bundled by Forge Config API Port is missing from the dev runtime classpath
     // there; add the same version explicitly for those variants.
-    findProperty("deps.nightconfigVersion")
-        ?.toString()
-        ?.takeIf { it.isNotBlank() }
-        ?.let { nightconfig ->
-            runtimeOnly("com.electronwill.night-config:core:$nightconfig")
-            runtimeOnly("com.electronwill.night-config:toml:$nightconfig")
-        }
+    optionalProp("deps.nightconfigVersion") { nightconfig ->
+        runtimeOnly("com.electronwill.night-config:core:$nightconfig")
+        runtimeOnly("com.electronwill.night-config:toml:$nightconfig")
+    }
 
     // Test
     testCompileOnly("org.jspecify:jspecify:1.0.0")
@@ -237,7 +226,7 @@ if (!supportsUnitTesting) {
     }
 }
 
-tasks.withType<JavaCompile> {
+tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
 }
 
@@ -296,20 +285,28 @@ afterEvaluate {
             accessToken = System.getenv("MODRINTH_TOKEN")
             projectId = System.getenv("MODRINTH_ID")
             minecraftVersions.addAll(publishedMinecraftVersions)
+            requires("perspective-api")
+            optional { slug.set("shoulder-surfing-reloaded") }
         }
         curseforge {
             accessToken = System.getenv("CURSEFORGE_TOKEN")
             projectId = System.getenv("CURSEFORGE_ID")
             minecraftVersions.addAll(publishedMinecraftVersions)
-            clientRequired = true
-            serverRequired = false
+            client = true
+            server = false
+            requires("perspective-api")
+            optional { slug.set("shoulder-surfing-reloaded") }
         }
     }
 }
+
 // endregion
 
 // region Helpers
 fun requiredProp(property: String): String =
     findProperty(property)?.toString()?.takeIf { it.isNotBlank() }
         ?: error("Required Gradle property '$property' is missing or blank")
+
+fun <T> optionalProp(property: String, block: (String) -> T?): T? =
+    findProperty(property)?.toString()?.takeIf { it.isNotBlank() }?.let(block)
 // endregion

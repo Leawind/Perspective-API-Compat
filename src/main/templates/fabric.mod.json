@@ -8,9 +8,11 @@
   "contact": {
     "homepage": "${home_url}",
     "issues": "${issues_url}",
-    "sources": "${source_url}"
+    "sources": "${source_url}",
+    "email": "${email}"
   },
   "license": "${mod_license}",
+  "icon": "${logo_file}",
   "environment": "client",
   "entrypoints": {
     "client": ["${mod_group}.platform.fabric.Entrypoint"]

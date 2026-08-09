@@ -9,6 +9,7 @@ version = "${mod_version}"
 displayName = "${mod_name}"
 description = "${mod_description}"
 authors = "${mod_author}"
+logoFile = "${logo_file}"
 displayURL = "${home_url}"
 
 [["dependencies.${mod_id}"]]
